@@ -1,26 +1,72 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import React from "react";
+import { render, screen, fireEvent, getByTestId } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Loading from "../Loading";
+import { testEpisode } from "./Episode.test.js";
 
-import Show from './../Show';
+import Show from "./../Show";
 
 const testShow = {
-    //add in approprate test data structure here.
-}
+  image:
+    "https://static.tvmaze.com/uploads/images/medium_portrait/200/501942.jpg",
+  name: "testName",
+  summary: "this is a test Summary",
+  seasons: [
+    {
+      id: 1,
+      name: "season1",
+      episodes: [
+        {
+          id: 1,
+          name: "test",
+          image:
+            "http://static.tvmaze.com/uploads/images/medium_landscape/67/168918.jpg",
+          season: 1,
+          number: 1,
+          summary: "this is a test summary",
+          runtime: 1,
+        },
+      ],
+    },
+  ],
+};
 
-test('renders testShow and no selected Season without errors', ()=>{
+test("renders testShow and no selected Season without errors", () => {
+  render(<Show show={testShow} selectedSeason="none" />);
 });
 
-test('renders Loading component when prop show is null', () => {
+test("renders Loading component when prop show is null", () => {
+  render(<Show show={null} />);
+  const loadingScreen = screen.getByTestId("loading-container");
+  expect(loadingScreen).toBeInTheDocument();
 });
 
-test('renders same number of options seasons are passed in', ()=>{
+test("renders same number of options seasons are passed in", () => {
+  render(<Show show={testShow} selectedSeason="none" />);
+  const options = screen.getAllByTestId("season-option");
+
+  expect(options.length).toBe(testShow.seasons.length);
 });
 
-test('handleSelect is called when an season is selected', () => {
+test("handleSelect is called when an season is selected", () => {
+  const mockCallBack = jest.fn();
+  render(
+    <Show show={testShow} selectedSeason="none" handleSelect={mockCallBack} />
+  );
+  const dropdown = screen.getByTestId("seasons");
+  userEvent.selectOptions(dropdown, ["1"]);
+  expect(mockCallBack.mock.calls.length).toBe(1);
 });
 
-test('component renders when no seasons are selected and when rerenders with a season passed in', () => {
+test("component renders when no seasons are selected and when rerenders with a season passed in", () => {
+  render(<Show show={testShow} selectedSeason="none" />);
+  const episodes = screen.queryByTestId("episodes-container");
+  expect(episodes).not.toBeInTheDocument();
+  const options = screen.getAllByTestId("season-option");
+  const value = options[0].getAttribute("value");
+  const dropdown = screen.getByTestId("seasons");
+  userEvent.selectOptions(dropdown, ["0", "1"]);
+  //   rerender(<Show show={testShow} selectedSeason={value} />);
 });
 
 //Tasks:
